@@ -1,0 +1,115 @@
+
+Process1 = Activity(
+    name: "A1",
+    roles:[
+        Role(type: RoleType.server, 
+             callBack: fn (clientId, value) -> if value < 10 raise exception else send(cliendId, value + 1) end),
+        Role(type: "client",
+             callBack: fn (serverId, value) -> print(send(serverid, {selfId, value})) end)
+          ], 
+    onCompletionCallBack: (success?) -> print(sucess); end)
+
+Process2 = Activity(
+    name: "A2",
+    roles:[
+        Role(type: "client",
+             callBack: fn (serverId, value) -> print(send(serverid, {selfId, value})) end )
+          ], 
+    onCompletionCallBack: (success?) -> print(sucess); end)
+    
+Process3 = Activity(
+    name:"A3",
+    roles:[
+        Role(type: "server", 
+             callBack: fn (clientId, value) -> return value + 1 end),
+        Role(type: "client",
+             callBack: fn (serverId, value) -> print(send(serverid, {selfId, value})) end )
+          ], 
+    onCompletionCallBack: (success?) -> print(sucess); end)
+
+
+
+
+
+
+newMon = Monitor(onCompletionCallBack: (success?, listOfProcesses) -> print(success) end)
+
+procotol_set1 = ConsensusProtocol(id: "2WayRand", protocol: {"client","Server"})
+
+procotol_set2 = ConsensusProtocol(id: "3WayRand", protocol: {"client","client","Server"})
+
+cg = makeConsensusProtocol(sets:[procotol_set1, procotol_set2])
+
+# old  // Coordinator.SetProtocol(cg)
+Coordinator.SetProtocol(procotol_set1)
+Coordinator.SetProtocol(procotol_set2)
+
+clientValue = 10
+Coordinator.RegisterProcess(
+    roleType:["client"], 
+    fn (protcolId, selfRole, listOfTupleOfParticipants, monitor) -> 
+                                        if protocolId = "2WayRand" then 
+                                            server = findServer(listOfTupleOfParticipants);
+                                            send(server, clientValue)
+                                        
+                                            do revieve value -> 
+                                                if value < clientValue then
+                                                    monitor.commit(self)
+                                                else
+                                                    monitor.abort(self)
+                                                end
+
+                                                "abort" ->
+                                                    IO.puts("client value #{clientValue} aborted")
+                                                end
+                                            end
+                                        else
+                                            tempHOlder = []
+                                            do recieve value1 ->
+                                                tempHOlder = [tempHOlder | value1]
+                                                if tempHOlder.length > 2 then
+                                                    monitor.abort(self)
+                                                else if tempHOlder.length == 2 then
+                                                    IO.puts(tempHOlder)
+                                                    monitor.commit(self)
+                                                end
+                                                IO.puts(value1)
+                                                
+                                            end
+                                            "abort" -> 
+                                               IO.puts("client values #{tempHOlder} aborted")
+
+                                            end
+                                            server = findServer(listOfTupleOfParticipants);
+                                            send(server, clientValue)
+                                            end
+                                        end  
+
+                                        end)
+
+Coordinator.RegisterProcess(Process2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Old and feed back
+Coordinator.RegisterProcess(cg,
+        {role1, role3, role 10},[variable1,variable2,variable3]
+        process). // registers a process that can play one of the possible roles
+coordinator = Coordinator(monitor: newMon,protocol: []activities: [variable1,variable2,variable3])
+
+
+
+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

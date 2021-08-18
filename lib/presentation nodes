@@ -1,0 +1,16 @@
+horizon problem
+
+how this fixes this
+gives much control over the data that is being commited
+gives more flexibility over how can it be implemented and gives more control over to the dveloper
+
+how does this solve the problem 
+
+
+
+in distributed systems there is alot can go wrong
+elixir gives more robustness in this senario 
+mail box system
+per process evviironment.
+fault tolerent because each process is individual process environment.
+
